@@ -7,25 +7,24 @@ import {Test} from "../../lib/forge-std/src/Test.sol";
 import {FundMe} from "../../src/FundMe.sol";
 import {DeployFundMe} from "../../script/DeployFundMe.s.sol";
 
-
 contract FundMeTest is Test {
     FundMe fundMe;
 
     address USER = makeAddr("user");
-    uint256 constant SEND_VALUE = 0.1 ether; 
+    uint256 constant SEND_VALUE = 0.1 ether;
     uint256 constant STARTING_BALANCE = 10 ether;
 
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
         fundMe = deployFundMe.run();
         vm.deal(USER, STARTING_BALANCE);
-    }   
+    }
 
     function testMinimumDollarIsFive() public view {
         assertEq(fundMe.MINIMUM_USD(), 5e18);
     }
 
-    function testOwnerIsMsgSender() public view{
+    function testOwnerIsMsgSender() public view {
         assertEq(fundMe.i_owner(), msg.sender);
     }
 
@@ -61,21 +60,21 @@ contract FundMeTest is Test {
         _;
     }
 
-    function testOnlyOwnerCanWithdraw() public funded{
+    function testOnlyOwnerCanWithdraw() public funded {
         vm.prank(USER);
         vm.expectRevert();
         fundMe.withdraw();
     }
 
-    function testWithdrawWithASingleFunder() public funded{
+    function testWithdrawWithASingleFunder() public funded {
         // Arrange
         uint256 startingOwnerBalance = fundMe.getOwner().balance;
         uint256 startingFundMeBalance = address(fundMe).balance;
-        
+
         // Act
         vm.prank(fundMe.getOwner());
         fundMe.withdraw();
-    
+
         // Assert
         uint256 endingOwnerBalance = fundMe.getOwner().balance;
         uint256 endingFundMeBalance = address(fundMe).balance;
@@ -87,7 +86,7 @@ contract FundMeTest is Test {
         // Arrange
         uint160 numberOfFunders = 10;
         uint160 startingFunderIndex = 1;
-        for(uint160 i = startingFunderIndex; i < numberOfFunders; i++){
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
             // vm.prank new address;
             // vm.deal new address;
             hoax(address(i), SEND_VALUE);
@@ -100,7 +99,7 @@ contract FundMeTest is Test {
         // Act
         vm.startPrank(fundMe.getOwner());
         fundMe.withdraw();
-        vm.stopPrank();  
+        vm.stopPrank();
 
         // Assert
         assert(address(fundMe).balance == 0);
@@ -111,7 +110,7 @@ contract FundMeTest is Test {
         // Arrange
         uint160 numberOfFunders = 10;
         uint160 startingFunderIndex = 1;
-        for(uint160 i = startingFunderIndex; i < numberOfFunders; i++){
+        for (uint160 i = startingFunderIndex; i < numberOfFunders; i++) {
             // vm.prank new address;
             // vm.deal new address;
             hoax(address(i), SEND_VALUE);
@@ -123,12 +122,11 @@ contract FundMeTest is Test {
 
         // Act
         vm.startPrank(fundMe.getOwner());
-        fundMe.cheaperWithdraw();       
-        vm.stopPrank();  
+        fundMe.cheaperWithdraw();
+        vm.stopPrank();
 
         // Assert
         assert(address(fundMe).balance == 0);
         assert(startingFundMeBalance + startingOwnerBalance == fundMe.getOwner().balance);
     }
-
 }
